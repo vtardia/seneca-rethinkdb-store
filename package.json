@@ -1,0 +1,39 @@
+{
+  "name": "seneca-rethinkdb-store",
+  "version": "0.1.0",
+  "description": "RethinkDB Store for SenecaJS",
+  "main": "rethinkdb-store.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeBlockInc/seneca-rethinkdb-store.git"
+  },
+  "contributors": [
+    "Abhinav Pobbati (http://www.codeblock.io/)"
+  ],
+  "keywords": [
+    "seneca",
+    "plugin",
+    "store",
+    "rethinkdb",
+    "json"
+  ],
+  "author": "Abhinav Pobbati <apobbati@codeblock.io>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/CodeBlockInc/seneca-rethinkdb-store/issues"
+  },
+  "homepage": "https://github.com/CodeBlockInc/seneca-rethinkdb-store#readme",
+  "dependencies": {
+    "lodash": "^3.10.1",
+    "rethinkdb": "^2.1.0"
+  },
+  "devDependencies": {
+    "async": "^1.4.2",
+    "mocha": "^2.2.5",
+    "seneca": "^0.6.4",
+    "seneca-store-test": "^0.2.2"
+  }
+}
