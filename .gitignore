@@ -17,3 +17,8 @@ node_modules
 .DS_Store
 test/db
 db
+
+.idea
+*.iml
+
+/rethinkdb_data
