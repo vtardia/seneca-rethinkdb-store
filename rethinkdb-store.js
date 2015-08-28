@@ -3,7 +3,7 @@
 var _ = require('lodash');
 var r = require('rethinkdb');
 
-var name = 'rethinkdb-store';
+var storename = 'rethinkdb-store';
 
 module.exports = function(opts) {
   var seneca = this;
@@ -12,7 +12,7 @@ module.exports = function(opts) {
 
   function error(args, err, cb) {
     if(err) {
-      seneca.log.error('entity', err, {store:name});
+      seneca.log.error('entity', err, {store:storename});
       return true;
     }
     else return false;
@@ -31,20 +31,18 @@ module.exports = function(opts) {
       db: 'test'
     }, conf);
 
-    r.connect(dbopts, onConnect);
-
-    function onConnect(err, c) {
-      if(err) {
+    r.connect(dbopts, function(err, connection) {
+      if(err)
         return seneca.die('connect', err, conf);
-      }
-      conn = c;
+
+      conn = connection;
       seneca.log.debug('init', 'connect');
       cb();
-    }
+    });
   }
 
   var store = {
-    name: name,
+    name: storename,
 
     close: function(args, cb) {
       conn.close(function(err) {
