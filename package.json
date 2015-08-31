@@ -30,6 +30,9 @@
     "lodash": "^3.10.1",
     "rethinkdb": "^2.1.0"
   },
+  "peerDependencies": {
+    "seneca": "*"
+  },
   "devDependencies": {
     "async": "^1.4.2",
     "mocha": "^2.2.5",
