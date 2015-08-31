@@ -183,9 +183,16 @@ module.exports = function(opts) {
     },
 
     native: function(args, cb) {
-      // TODO: Implement
-      console.log('Native Driver not implemented');
-      cb('Not implemented');
+      var ent = args.ent;
+      var canon = ent.canon$({object: true});
+      var name = canon.name;
+
+      args.exec(null, {
+        r: r,
+        db: db,
+        table: name,
+        ent: ent
+      });
     }
   };
 

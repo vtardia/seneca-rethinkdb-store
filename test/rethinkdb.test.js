@@ -25,6 +25,33 @@ describe('rethinkdb', function() {
     shared.basictest(si, done);
   });
 
+  it('native', function(done) {
+    async.series({
+      passthrough: function(cb) {
+        var foo = si.make('foo');
+        foo.native$({
+          exec: function(err, args) {
+            /**
+             * args: {
+             *  r: <rethinkdb-driver>
+             *  db: <database-name>
+             *  table: <table-name>
+             *  ent: <entity-creator>
+             * }
+             *
+             * This should allow you full freedom to
+             * manipulate the result set.
+             */
+            cb();
+          }
+        });
+      }
+    }, function (err, out) {
+      si.__testcount++;
+      done();
+    });
+  });
+
   it('close', function(done) {
     shared.closetest(si, testcount, done);
   });
