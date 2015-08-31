@@ -1,6 +1,6 @@
 {
   "name": "seneca-rethinkdb-store",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "RethinkDB Store for SenecaJS",
   "main": "rethinkdb-store.js",
   "scripts": {
