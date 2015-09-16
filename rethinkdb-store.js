@@ -1,4 +1,5 @@
-'use strict';
+/*jslint node: true */
+"use strict";
 
 var _ = require('lodash');
 var r = require('rethinkdb');
@@ -39,78 +40,67 @@ module.exports = function(opts) {
     name: storename,
 
     close: function(args, cb) {
-      conn.close(function() {
-        cb();
+      conn.close(function(err) {
+        if (err) return cb(err);
+        return cb();
       });
     },
 
     save: function(args, cb) {
       var ent = args.ent;
 
-      var create = (null == ent.id);
+      var update = true;
 
       var canon = ent.canon$({object: true});
       var zone = canon.zone;
       var base = canon.base;
       var name = canon.name;
 
-      if(create) {
-        if(ent.id$) {
-          var id = ent.id$;
-          delete ent.id$;
-          do_save(id);
-        }
-        else {
-          this.act(
-            {role:'basic', cmd:'generate_id',
-            name:name, base:base, zone:zone},
-            function(err, id) {
-              if(err) return cb(err);
-              do_save(id);
-            }
-          );
+      var tableName = tablename(args.ent);
+
+      if (!ent.id) {
+        update = false;
+        if (ent.id$) {
+          ent.id = ent.id$;
         }
       }
-      else {
-        do_save(ent.id);
+
+      if (update) {
+        return do_save(ent.id);
+      } else {
+        return do_save();
       }
 
       function do_save(id) {
         var rdent = ent.data$(true, 'string');
 
-        if(id) {
-          rdent.id = id;
-        }
-
         rdent.entity$ = ent.entity$;
 
-        r.db(db).table(name).get(rdent.id).run(conn, function(err, result) {
-          if(err) return cb(err);
+        if(!id) {
+          return do_insert(rdent);
+        } else {
+          rdent.id = id;
+          return do_update(rdent);
+        }
 
-          if(!result)
-            do_insert(rdent);
-          else
-            do_update(result, rdent);
-        });
       }
 
-      function do_update(prev, rdent) {
-        var obj = seneca.util.deepextend(prev, rdent);
+      function do_update(rdent) {
 
-        r.db(db).table(name).get(rdent.id).update(obj, {returnChanges: true}).run(conn, function(err, result) {
+        r.db(db).table(tableName).get(rdent.id).update(rdent, {returnChanges: true}).run(conn, function(err, result) {
           if(err)
-            cb(err);
+            return cb(err);
           else if(result.changed > 0)
-            cb(null, ent.make$(result.changes[0].new_val));
+            return cb(null, ent.make$(result.changes[0].new_val));
           else
-            cb(null, ent.make$(rdent));
+            return cb(null, ent.make$(rdent));
         });
       }
 
       function do_insert(rdent) {
-        r.db(db).table(name).insert(rdent, {returnChanges: true}).run(conn, function(err, result) {
+        r.db(db).table(tableName).insert(rdent, {returnChanges: true}).run(conn, function(err, result) {
           if(err) return cb(err);
-          cb(null, ent.make$(result.changes[0].new_val));
+          return cb(null, ent.make$(result.changes[0].new_val));
         });
       }
     },
@@ -122,9 +112,11 @@ module.exports = function(opts) {
       var canon = qent.canon$({object: true});
       var name = canon.name;
 
-      r.db(db).table(name).get(q.id).run(conn, function(err, result) {
-        if(err) return cb(err);
-        cb(null, result ? qent.make$(result) : null);
+      r.db(db).table(tablename(qent)).get(q.id).run(conn, function(err, result) {
+        if(err) {
+          return cb(err);
+        }
+        return cb(null, result ? qent.make$(result) : null);
       });
     },
 
@@ -135,7 +127,7 @@ module.exports = function(opts) {
       var canon = qent.canon$({object: true});
       var name = canon.name;
 
-      r.db(db).table(name).filter(q).run(conn, function(err, cursor) {
+      r.db(db).table(tablename(qent)).filter(q).run(conn, function(err, cursor) {
         if(err) return cb(err);
 
         var list = [];
@@ -144,7 +136,7 @@ module.exports = function(opts) {
           list.push(qent.make$(item));
         });
 
-        cb(null, list);
+        return cb(null, list);
       });
     },
 
@@ -159,7 +151,7 @@ module.exports = function(opts) {
       var load  = _.isUndefined(q.load$) ? true : q.load$; // default true
 
       if(all) {
-        r.db(db).table(name).delete({returnChanges: load}).run(conn, function(err, result) {
+        r.db(db).table(tablename(qent)).delete({returnChanges: load}).run(conn, function(err, result) {
           if(err) return cb(err);
 
           cb(null, _.map(load ? result.changes : [], function(e) {
@@ -172,7 +164,7 @@ module.exports = function(opts) {
           return _.endsWith(k, '$');
         }); // Remove cruft
 
-        r.db(db).table(name).filter(q_clean).delete({returnChanges: load}).run(conn, function (err, result) {
+        r.db(db).table(tablename(qent)).filter(q_clean).delete({returnChanges: load}).run(conn, function (err, result) {
           if(err) return cb(err);
 
           cb(null, _.map(load ? result.changes : [], function(e) {
@@ -190,10 +182,15 @@ module.exports = function(opts) {
       args.exec(null, {
         r: r,
         db: db,
-        table: name,
+        table: tablename(ent),
         ent: ent
       });
     }
+  };
+
+  var tablename = function (entity) {
+    var canon = entity.canon$({object:true});
+    return (canon.base?canon.base+'_':'')+canon.name;
   };
 
   var meta = seneca.store.init(seneca, opts, store);
