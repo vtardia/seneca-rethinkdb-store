@@ -4,7 +4,7 @@
   "description": "RethinkDB Store for SenecaJS",
   "main": "rethinkdb-store.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/*.test.js"
+    "test": "lab test/*.test.js -r console -v"
   },
   "repository": {
     "type": "git",
@@ -30,13 +30,10 @@
     "lodash": "^3.10.1",
     "rethinkdb": "^2.1.0"
   },
-  "peerDependencies": {
-    "seneca": "*"
-  },
   "devDependencies": {
     "async": "^1.4.2",
-    "mocha": "^2.2.5",
-    "seneca": "^0.6.4",
+    "lab": "^5.16.0",
+    "seneca": "^0.6.5",
     "seneca-store-test": "^0.2.2"
   }
 }

@@ -1,10 +1,13 @@
-'use strict';
+/*jslint node: true */
+"use strict";
 
-var assert = require('assert');
 var seneca = require('seneca');
+var lab = exports.lab = require('lab').script();
 var async = require('async');
-
 var shared = require('seneca-store-test');
+
+var describe = lab.describe;
+var it = lab.it;
 
 var si = seneca();
 
